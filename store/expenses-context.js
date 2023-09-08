@@ -3,6 +3,7 @@ import { createContext, useReducer } from 'react';
 export const ExpensesContext = createContext({
   expenses: [], 
   addExpense: ({description, amount, date}) => {}, 
+  setExpense: (expenses) => {},
   deleteExpense: (id) => {},
   updateExpense: (id, {description, amount, date}) => {}
 });
@@ -10,8 +11,9 @@ export const ExpensesContext = createContext({
 function expensesReducer(state, action) {
   switch (action.type) {
     case 'ADD':
-      const id = new Date().toString() + Math.random().toString();
-      return [{...action.payload, id},...state]
+      return [action.payload,...state]
+    case 'SET':
+      return action.payload.reverse();
     case 'UPDATE':
       const updatableExpenseIndex = state.findIndex((expense) => expense.id === action.payload.id)
       const updatableExpense = state[updatableExpenseIndex];
@@ -27,10 +29,14 @@ function expensesReducer(state, action) {
 }
 
 export default function ExpensesContextProvider({children}) {
-  const [expensesState, dispatch] = useReducer(expensesReducer, DUMMY_EXPENSES);
+  const [expensesState, dispatch] = useReducer(expensesReducer, []);
   
   function addExpense(expenseData) {
     dispatch({type: 'ADD', payload: expenseData});
+  }
+  
+  function setExpense(expenses) {
+    dispatch({type: 'SET', payload: expenses});
   }
   
   function deleteExpense(id) {
@@ -43,6 +49,7 @@ export default function ExpensesContextProvider({children}) {
   
   const value = {
     expenses: expensesState,
+    setExpense,
     addExpense,
     deleteExpense,
     updateExpense,
